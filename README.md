@@ -20,6 +20,6 @@ Setting up:
 * Modify [config.sample.py](https://github.com/ajacobsen/VidHub/blob/master/vidhub/config.sample.py) and replace the default configurations to yours
   * [Docs](https://docs.djangoproject.com/en/3.0/topics/settings/)
 
-* Install python dependanices (`pip install -r requirements.txt`)
+* Install python dependencies (`pip install -r requirements.txt`)
 
 * Run `./manage.py migrate`
