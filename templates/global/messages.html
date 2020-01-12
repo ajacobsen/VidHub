@@ -1,0 +1,45 @@
+<style>
+	.message-container {
+		grid-column-start: 1;
+	    grid-column-end: 4;
+	    display: flex;
+	    background-color: #3b557e;
+	    color: #fff;
+	    background-image: linear-gradient(to bottom,#6482ad 0,#3b557e 45px);
+	    border-radius: 3px;
+	    box-shadow: 0 1px 2px rgba(0,0,0,.5), inset 0 0 1px rgba(0,0,0,.2);
+	}
+
+	.message-container > button {
+		background: transparent;
+	    border: none;
+	    color: #fff;
+	    padding: 10px;
+	    cursor: pointer;
+	}
+
+	.message {
+		text-align: center;
+	    width: 100%;
+	    padding: 10px;
+	    font-size: 13px;
+	    font-weight: bold;
+	    text-shadow: 0 -1px 1px rgba(0,0,0,.45);
+	}
+
+	.d-none {
+		display: none;
+	}
+
+</style>
+
+{% if messages %}
+{% for message in messages %}
+	<div id="message" class="message-container">
+        <div class="message">{{ message }}</div>
+        <button type="button" onclick="$('#message').addClass('d-none')">
+			<i class="fas fa-times"></i>
+		</button>
+	</div>
+{% endfor %}
+{% endif %}
