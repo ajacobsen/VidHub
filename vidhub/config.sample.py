@@ -12,8 +12,17 @@ class Config:
 			'PORT': '3306',
 		}
 	}
+
 	MAINTENANCE_MODE = None
 	MAINTENANCE_MODE_TEMPLATE = 'streamer/maintenance.html'
 	MAINTENANCE_MODE_IGNORE_ADMIN_SITE = False
 	MAINTENANCE_MODE_IGNORE_AUTHENTICATED_USER = False
 	DEBUG = True
+
+	DOMAIN = 'example.com'
+
+	EMAIL_HOST_USER='noreply@example.com'
+	EMAIL_HOST_PASSWORD='TOPSECRET'
+	EMAIL_USE_TLS = True
+	EMAIL_HOST = 'smtp.example.com'
+	EMAIL_PORT = 587

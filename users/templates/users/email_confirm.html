@@ -1,0 +1,36 @@
+{% extends "streamer/base.html" %}
+{% load account %}
+
+{% block head %}
+	<title>Confirm E-mail Address - TRACLE</title>
+{% endblock %}
+
+
+{% block main_content %}
+
+{% include 'streamer/navbar.html' %}
+
+<div style="grid-column-start: 1; grid-column-end: 4; text-align: center;">
+	<h1>Confirm e-mail Address</h1>
+
+	{% if confirmation %}
+		{% user_display confirmation.email_address.user as user_display %}
+		<p style="font-size: 1.5em">Please click on the button below to complete the e-mail confirmation.</p>
+		<form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
+			{% csrf_token %}
+		    <button type="submit" name="action_confirm">Confirm</button>
+		</form>
+	{% else %}
+		{% url 'account_email' as email_url %}
+
+		<p>
+			This e-mail confirmation link expired or is invalid. Please issue a new e-mail confirmation request</a>.
+			<form method="POST">
+				{% csrf_token %}
+				<button type="submit" name="action_send">Resend e-mail</button>
+			</form>
+		</p>
+	{% endif %}
+</div>
+{% endblock %}
+

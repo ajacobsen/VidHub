@@ -5,21 +5,28 @@ import magic
 
 from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.conf import settings
 from django.views.decorators.vary import vary_on_headers
 from django.forms.models import model_to_dict
 from django.core.files.images import ImageFile
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_text
+from django.core.mail import EmailMessage
+from django.template.loader import get_template
 
 from video_encoding.backends.ffmpeg import FFmpegBackend
 from video_encoding.exceptions import FFmpegError
 from video_encoding import tasks
 from django_rq import enqueue
 
-from .models import Video, Channel, Category, Playlist, PlaylistEntry, Subscription, Likes, Dislikes, Comment
-from .forms import VideoForm, EditVideoForm, SignUpForm, LoginForm
+from users.models import Channel
+
+from .models import Video, Category, Playlist, PlaylistEntry, Subscription, Likes, Dislikes, Comment
+from .forms import VideoForm, EditVideoForm
+from .tokens import user_tokenizer
 
 logger =logging.getLogger('django')
 
@@ -38,7 +45,7 @@ def index(request):
 		videos = videos.filter(title__icontains=search)
 	context['videos'] = videos
 	if request.user.is_authenticated:
-		context['channel'] = Channel.objects.get(owner__exact=request.user)
+		context['channel'] = Channel.objects.get(user__exact=request.user)
 	return render(request, 'streamer/index.html', context)
 
 def video(request, watch_id):
@@ -164,24 +171,6 @@ def deleteVideo(request):
 			raise SuspiciousOperation
 	else:
 		raise SuspiciousOperation
-def signup(request):
-	if request.method == 'POST':
-		form = SignUpForm(request.POST)
-		if form.is_valid:
-			user = form.save()
-			channel = Channel.objects.create(name=request.POST.get('channel_name'), owner=user)
-			Playlist.objects.create(title='History', owner=channel)
-			raw_password = form.cleaned_data.get('password1')
-			user = authenticate(username=user.username, password=raw_password)
-			if user is not None:
-				login(request, user)
-			return redirect('/')
-	else:
-		form = SignUpForm()
-	return render(request, 'streamer/signup.html', {'form' : form})
-
-def signup_disabled(request):
-	return render(request, 'streamer/signup_disabled.html')
 
 def channel(request, channel_id):
 	channel = Channel.objects.get(channel_id__exact=channel_id)

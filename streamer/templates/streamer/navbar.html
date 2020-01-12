@@ -95,7 +95,7 @@
     <ul class="navbar-nav">
         {% if request.user.is_authenticated %}
           <li>
-            <a href="/signout">Logout {{ request.user.username }}</a>
+            <a href="/logout">Logout {{ request.user.username }}</a>
           </li>
         {% else %}
           <li>
@@ -105,7 +105,7 @@
             |
           </li>
           <li>
-            <a href="/signin">Sign In</a>
+            <a href="/login">Sign In</a>
           </li>
 
         {% endif %}

@@ -36,6 +36,8 @@ ALLOWED_HOSTS = Config.ALLOWED_HOSTS
 
 INSTALLED_APPS = [
 	'streamer.apps.StreamerConfig',
+	'users.apps.UsersConfig',
+
 	'django.contrib.admin',
 	'django.contrib.auth',
 	'django.contrib.contenttypes',
@@ -47,6 +49,7 @@ INSTALLED_APPS = [
 	'video_encoding',
 	'maintenance_mode',
 ]
+
 
 MIDDLEWARE = [
 	'django.middleware.security.SecurityMiddleware',
@@ -64,7 +67,7 @@ ROOT_URLCONF = 'vidhub.urls'
 TEMPLATES = [
 	{
 		'BACKEND': 'django.template.backends.django.DjangoTemplates',
-		'DIRS': [],
+		'DIRS': [os.path.join(BASE_DIR, 'templates')],
 		'APP_DIRS': True,
 		'OPTIONS': {
 			'context_processors': [
@@ -223,3 +226,17 @@ LOGGING = {
     },
 }
 
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.AllowAllUsersModelBackend',
+)
+
+DOMAIN = Config.DOMAIN
+
+EMAIL_HOST_USER = Config.EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = Config.EMAIL_HOST_PASSWORD
+EMAIL_USE_TLS = Config.EMAIL_USE_TLS
+EMAIL_HOST = Config.EMAIL_HOST
+EMAIL_PORT = Config.EMAIL_PORT
+
+AUTH_USER_MODEL = 'users.CustomUser'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

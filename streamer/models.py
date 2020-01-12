@@ -1,20 +1,12 @@
 # from datetime import date, datetime
 from django.utils import timezone
-
+from django.conf import settings
 from django.db import models
-from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 
 from video_encoding.fields import VideoField
 from video_encoding.models import Format
-
-class Channel(models.Model):
-	name = models.CharField(max_length=100)
-	owner = models.OneToOneField(User, on_delete=models.CASCADE)
-	channel_id = models.CharField(max_length=10, blank=True)
-
-	def __str__(self):
-		return self.name
+from users.models import Channel
 
 class Category(models.Model):
 	title = models.CharField(max_length=100)
@@ -58,20 +50,17 @@ class Video(models.Model):
 	def __str__(self):
 		return str(self.file)
 
-	def get_channel(self):
-		return Channel.objects.get(pk__exact=self.channel)
-
 class PlaylistEntry(models.Model):
 	video = models.ForeignKey(Video, on_delete=models.CASCADE)
 	date_added = models.DateTimeField(default=timezone.now)
 
 class Playlist(models.Model):
 	title = models.CharField(max_length=100)
-	owner = models.ForeignKey(Channel, on_delete=models.CASCADE)
+	channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
 	videos = models.ManyToManyField(PlaylistEntry)
 
 	def __str__(self):
-		return self.title
+		return '{} from {}'.format(self.title, self.channel.name)
 
 
 class Subscription(models.Model):
@@ -79,16 +68,16 @@ class Subscription(models.Model):
 	to_channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
 
 class Likes(models.Model):
-	user = models.ForeignKey(User, on_delete=models.CASCADE)
+	channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
 	video = models.ForeignKey(Video, on_delete=models.CASCADE)
 
 class Dislikes(models.Model):
-	user = models.ForeignKey(User, on_delete=models.CASCADE)
+	channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
 	video = models.ForeignKey(Video, on_delete=models.CASCADE)
 
 class Comment(models.Model):
 	video = models.ForeignKey(Video, on_delete=models.CASCADE)
-	user = models.ForeignKey(User, on_delete=models.CASCADE)
+	channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
 	text = models.TextField()
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)

@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from video_encoding.admin import FormatInline
 
-from .models import Video, Channel, Category, Comment
+from .models import Video, Category, Comment, Playlist
 
 @admin.register(Video)
 class VideoAdmin(admin.ModelAdmin):
@@ -12,6 +12,6 @@ class VideoAdmin(admin.ModelAdmin):
    fields = ('file', 'width', 'height', 'duration')
    readonly_fields = fields
 
-admin.site.register(Channel)
 admin.site.register(Category)
 admin.site.register(Comment)
+admin.site.register(Playlist)
