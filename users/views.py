@@ -5,6 +5,7 @@ from django.template.loader import render_to_string
 from django.contrib.auth import login, authenticate, logout
 from django.conf import settings
 from django.views import View
+from django.contrib import messages
 
 from .forms import SignupForm, SigninForm
 from .models import CustomUser
@@ -29,7 +30,7 @@ class SignupView(View):
                 'token': account_activation_token.make_token(user),
                 })
             user.email_user(subject, message)
-            return redirect('users:login')
+            return render(request, 'users/verification_sent.html')
         else:
             return render(request, 'users/signup.html', {'form' : form})
 
