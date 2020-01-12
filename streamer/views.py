@@ -26,7 +26,6 @@ from users.models import Channel
 
 from .models import Video, Category, Playlist, PlaylistEntry, Subscription, Likes, Dislikes, Comment
 from .forms import VideoForm, EditVideoForm
-from .tokens import user_tokenizer
 
 logger =logging.getLogger('django')
 
