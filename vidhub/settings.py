@@ -238,5 +238,5 @@ EMAIL_USE_TLS = Config.EMAIL_USE_TLS
 EMAIL_HOST = Config.EMAIL_HOST
 EMAIL_PORT = Config.EMAIL_PORT
 
-AUTH_USER_MODEL = 'users.CustomUser'
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+AUTH_USER_MODEL = 'users.User'
+EMAIL_BACKEND = Config.EMAIL_BACKEND
