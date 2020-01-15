@@ -8,7 +8,7 @@ from django.views import View
 from django.contrib import messages
 
 from .forms import SignupForm, SigninForm
-from .models import User
+from .models import User, Channel
 from .tokens import account_activation_token
 
 class SignupView(View):
@@ -48,7 +48,11 @@ class LoginView(View):
             user = authenticate(username=email, password=raw_password)
             if user is not None:
                 login(request, user)
+                channel = Channel.objects.filter(user__exact=user)[0]
+                request.session['channel_id'] =  channel.channel_id
+                request.session['channel_name'] = channel.name
                 return redirect('streamer:index')
+
 
         return render(request, 'users/login.html', {'form' : form})
 
