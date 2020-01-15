@@ -1,0 +1,122 @@
+[
+{
+    "model": "streamer.category",
+    "pk": 1,
+    "fields": {
+        "title": "Music",
+        "name": "music"
+    }
+},
+{
+    "model": "streamer.category",
+    "pk": 2,
+    "fields": {
+        "title": "Entertainment",
+        "name": "entertainment"
+    }
+},
+{
+    "model": "streamer.category",
+    "pk": 3,
+    "fields": {
+        "title": "Sports",
+        "name": "sports"
+    }
+},
+{
+    "model": "streamer.category",
+    "pk": 4,
+    "fields": {
+        "title": "Film & Animation",
+        "name": "film_animation"
+    }
+},
+{
+    "model": "streamer.category",
+    "pk": 5,
+    "fields": {
+        "title": "News & Politics",
+        "name": "news_politics"
+    }
+},
+{
+    "model": "streamer.category",
+    "pk": 6,
+    "fields": {
+        "title": "Comedy",
+        "name": "comedy"
+    }
+},
+{
+    "model": "streamer.category",
+    "pk": 7,
+    "fields": {
+        "title": "People & Blogs",
+        "name": "people_blogs"
+    }
+},
+{
+    "model": "streamer.category",
+    "pk": 8,
+    "fields": {
+        "title": "Science & Technology",
+        "name": "science_technology"
+    }
+},
+{
+    "model": "streamer.category",
+    "pk": 9,
+    "fields": {
+        "title": "Gaming",
+        "name": "gaming"
+    }
+},
+{
+    "model": "streamer.category",
+    "pk": 10,
+    "fields": {
+        "title": "Howto & Style",
+        "name": "howto_style"
+    }
+},
+{
+    "model": "streamer.category",
+    "pk": 11,
+    "fields": {
+        "title": "Education",
+        "name": "education"
+    }
+},
+{
+    "model": "streamer.category",
+    "pk": 12,
+    "fields": {
+        "title": "Pets & Animals",
+        "name": "pets_animals"
+    }
+},
+{
+    "model": "streamer.category",
+    "pk": 13,
+    "fields": {
+        "title": "Auto & Vehicles",
+        "name": "auto_vehicles"
+    }
+},
+{
+    "model": "streamer.category",
+    "pk": 14,
+    "fields": {
+        "title": "Travel & Events",
+        "name": "travel_events"
+    }
+},
+{
+    "model": "streamer.category",
+    "pk": 15,
+    "fields": {
+        "title": "Nonprofits & Activism",
+        "name": "nonprofits_activism"
+    }
+}
+]
