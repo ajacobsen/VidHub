@@ -8,7 +8,7 @@ from django.views import View
 from django.contrib import messages
 
 from .forms import SignupForm, SigninForm
-from .models import CustomUser
+from .models import User
 from .tokens import account_activation_token
 
 class SignupView(View):
@@ -63,8 +63,8 @@ class ActivateView(View):
     def get(self, request, key, token):
         try:
             uid = force_text(urlsafe_base64_decode(key))
-            user = CustomUser.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             user = None
 
         if user is not None and account_activation_token.check_token(user, token):
