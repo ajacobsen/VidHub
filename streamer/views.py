@@ -61,20 +61,20 @@ class VideoView(View):
 		is_video_disliked = False
 		subscribed = False
 		if request.user.is_authenticated:
-			channel = Channel.objects.get(owner__exact=request.user)
-			playlist = Playlist.objects.get(owner__exact=channel, title__exact='History')
+			channel = Channel.objects.get(user__exact=request.user)
+			playlist = Playlist.objects.get(channel__exact=channel, title__exact='History')
 			playlistEntry = PlaylistEntry.objects.create(video=video)
 			playlist.videos.add(playlistEntry)
 			is_video_liked = Likes.objects.filter(user__exact=request.user, video__exact=video).exists()
 			is_video_disliked = Dislikes.objects.filter(user__exact=request.user, video__exact=video).exists()
-			loggedin_channel = Channel.objects.get(owner__exact=request.user)
+			loggedin_channel = Channel.objects.get(user__exact=request.user)
 			subscribed = Subscription.objects.filter(from_channel__exact=loggedin_channel, to_channel__exact=channel).exists()
 		formats = video.format_set.complete().all()
 		recommended_videos = Video.objects.filter(status__exact='public', processed__exact=True)
 		comments = Comment.objects.filter(active=True, parent__isnull=True, video__exact=video)
 		return render(request, 'streamer/video.html', {'video' : video, 'formats' : formats, 'is_video_liked' : is_video_liked, 'is_video_disliked': is_video_disliked, 'like_count' : like_count, 'dislike_count' : dislike_count, 'subscribed' : subscribed, 'recommended_videos' : recommended_videos, 'comments' : comments})
 
-class UploadVideoView(LoginRequiredMixin, View)
+class UploadVideoView(LoginRequiredMixin, View):
 	def post(self, request):
 		if request.is_ajax():
 			if request.POST.get('get_thumbnail'):
@@ -99,7 +99,7 @@ class UploadVideoView(LoginRequiredMixin, View)
 					except FFmpegError as e:
 						os.remove(os.path.join(settings.MEDIA_ROOT, form.files['file'].name))
 						return JsonResponse({'is_valid' : False})
-					video.channel = Channel.objects.get(owner__exact=request.user.id)
+					video.channel = Channel.objects.get(user__exact=request.user.id)
 					video.status = 'drafting'
 					video.save()
 
@@ -146,12 +146,12 @@ class UploadVideoView(LoginRequiredMixin, View)
 					video.pk)
 			return redirect("/")
 
-	def get(self, request)
+	def get(self, request):
 		form = VideoForm()
 		categories = Category.objects.all()
 		return render(request, 'streamer/upload.html', {'form' : form, 'initial_upload' : True, 'categories' : categories})
 
-class EditVideoView(LoginRequiredMixin, View)
+class EditVideoView(LoginRequiredMixin, View):
 	def get(self, request, watch_id):
 		video = get_object_or_404(Video, watch_id__exact=watch_id)
 		form = EditVideoForm(instance=video)
@@ -168,7 +168,7 @@ class EditVideoView(LoginRequiredMixin, View)
 class DeleteVideoView(LoginRequiredMixin, View):
 	def post(self, request):
 		video = Video.objects.get(watch_id__exact=request.POST.get('watch_id'))
-		channel = Channel.objects.get(owner__exact=request.user)
+		channel = Channel.objects.get(user__exact=request.user)
 		if video.channel == channel:
 			video.delete()
 			return JsonResponse({"success" : True})
@@ -183,7 +183,7 @@ class ChannelView(View):
 		videos = Video.objects.filter(channel__exact=channel, status__exact='public', processed__exact=True)
 
 		if request.user.is_authenticated:
-			loggedin_channel = Channel.objects.get(owner__exact=request.user)
+			loggedin_channel = Channel.objects.get(user__exact=request.user)
 			subscribed = Subscription.objects.filter(from_channel__exact=loggedin_channel, to_channel__exact=channel).exists()
 		else:
 			subscribed = False
@@ -196,17 +196,17 @@ class ChannelView(View):
 
 class HistoryView(LoginRequiredMixin, View):
 	def get(self, request):
-		channel = Channel.objects.get(owner__exact=request.user.id)
-		playlist = Playlist.objects.get(owner__exact=channel, title__exact='History')
+		channel = Channel.objects.get(user__exact=request.user.id)
+		playlist = Playlist.objects.get(channel__exact=channel, title__exact='History')
 		videos = playlist.videos.order_by('-date_added')
 		return render(request, 'streamer/history.html', { 'videos' : videos })
 
-class SubScribeView(LoginRequiredMixin, View)
+class SubscribeView(LoginRequiredMixin, View):
 	def get(self, request):
 		raise SuspiciousOperation
 
 	def post(self, request):
-		from_channel = Channel.objects.get(owner__exact=request.user)
+		from_channel = Channel.objects.get(user__exact=request.user)
 		to_channel = Channel.objects.get(pk=request.POST.get('channel_id'))
 
 		if request.POST.get('action') == 'subscribe':
@@ -257,12 +257,13 @@ class DislikeView(LoginRequiredMixin, View):
 		return JsonResponse({'success' : True, 'like_count' : like_count, 'dislike_count' : dislike_count, 'was_liked' : was_liked})
 
 class CommentView(LoginRequiredMixin, View):
-def get(self, request):
-	raise SuspiciousOperation
+	def get(self, request):
+		raise SuspiciousOperation
 
 	def post(self, request):
+		channel = Channel.get(user__exact=request.user)
 		if request.POST.get('parent_id'):
-			comment = Comment.objects.create(video=Video.objects.get(pk=request.POST.get('video_id')), user=request.user, text=request.POST.get('text'), parent=Comment.objects.get(pk=request.POST.get('parent_id')))
+			comment = Comment.objects.create(video=Video.objects.get(pk=request.POST.get('video_id')), channel=channel, text=request.POST.get('text'), parent=Comment.objects.get(pk=request.POST.get('parent_id')))
 			html = """
 			<div style="margin-left: 10px;" class="comment-container">
 				<div class="comment-body">
@@ -292,8 +293,8 @@ def get(self, request):
 			return JsonResponse({'success' : True, 'comment' : html})
 
 
-class Dashboard(LoginRequiredMixin, View):
+class DashboardView(LoginRequiredMixin, View):
 	def get(self, request):
-		channel = Channel.objects.get(owner__exact=request.user)
+		channel = Channel.objects.get(user__exact=request.user)
 		videos = Video.objects.filter(channel__exact=channel)
 		return render(request, 'streamer/dashboard.html', {'videos' : videos})
