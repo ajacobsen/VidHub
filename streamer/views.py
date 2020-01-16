@@ -51,7 +51,7 @@ class IndexView(View):
 
 
 class VideoView(View):
-	def get(request, watch_id):
+	def get(self, request, watch_id):
 		video = get_object_or_404(Video, watch_id__exact=watch_id)
 		video.view_count += 1
 		video.save()
@@ -65,8 +65,8 @@ class VideoView(View):
 			playlist = Playlist.objects.get(channel__exact=channel, title__exact='History')
 			playlistEntry = PlaylistEntry.objects.create(video=video)
 			playlist.videos.add(playlistEntry)
-			is_video_liked = Likes.objects.filter(user__exact=request.user, video__exact=video).exists()
-			is_video_disliked = Dislikes.objects.filter(user__exact=request.user, video__exact=video).exists()
+			is_video_liked = Likes.objects.filter(channel__exact=channel, video__exact=video).exists()
+			is_video_disliked = Dislikes.objects.filter(channel__exact=channel, video__exact=video).exists()
 			loggedin_channel = Channel.objects.get(user__exact=request.user)
 			subscribed = Subscription.objects.filter(from_channel__exact=loggedin_channel, to_channel__exact=channel).exists()
 		formats = video.format_set.complete().all()
@@ -261,7 +261,7 @@ class CommentView(LoginRequiredMixin, View):
 		raise SuspiciousOperation
 
 	def post(self, request):
-		channel = Channel.get(user__exact=request.user)
+		channel = Channel.get(channel_id__exact=request.session.get('channel_id'))
 		if request.POST.get('parent_id'):
 			comment = Comment.objects.create(video=Video.objects.get(pk=request.POST.get('video_id')), channel=channel, text=request.POST.get('text'), parent=Comment.objects.get(pk=request.POST.get('parent_id')))
 			html = """
@@ -295,6 +295,6 @@ class CommentView(LoginRequiredMixin, View):
 
 class DashboardView(LoginRequiredMixin, View):
 	def get(self, request):
-		channel = Channel.objects.get(user__exact=request.user)
+		channel = Channel.objects.get(channel_id__exact=request.session.get('channel_id'))
 		videos = Video.objects.filter(channel__exact=channel)
 		return render(request, 'streamer/dashboard.html', {'videos' : videos})
