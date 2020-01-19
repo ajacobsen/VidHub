@@ -1,11 +1,18 @@
-from django import forms
 
-from .models import Video
+from django import forms
+from django.core.files.uploadedfile import InMemoryUploadedFile
+
+from .models import Video, VideoFile
+
+class VideoFileForm(forms.ModelForm):
+	class Meta:
+		model=VideoFile
+		fields=["file"]
 
 class VideoForm(forms.ModelForm):
 	class Meta:
-		model=Video
-		fields=["file", "category"]
+		model = Video
+		fields = ['title', 'description', 'category', 'thumbnail', 'status']
 
 class EditVideoForm(forms.ModelForm):
 	class Meta:

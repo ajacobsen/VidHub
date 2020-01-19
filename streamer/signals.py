@@ -9,20 +9,20 @@ from django.dispatch import receiver
 from video_encoding.tasks import video_convert_done
 from video_encoding.models import Format
 
-from .models import Video
+from .models import Video, VideoFile
 
 
 logger = logging.getLogger('django')
 
-@receiver(post_delete, sender=Video)
+@receiver(post_delete, sender=VideoFile)
 def delete_video_files(sender, instance, **kwargs):
-	logger.info('CLEANING UP: {}'.format(instance.file.path))
 	if instance.file:
-		logger.info('DELETING: ' + instance.file.path)
 		if os.path.isfile(instance.file.path):
 			os.remove(instance.file.path)
+
+@receiver(post_delete, sender=Video)
+def delete_thumbnail(sender, instance, **kwargs):
 	if instance.thumbnail:
-		logger.info('DELETING: ' + instance.thumbnail.path)
 		if os.path.isfile(instance.thumbnail.path):
 			os.remove(instance.thumbnail.path)
 
@@ -47,6 +47,5 @@ def pre_save_create_watch_id(sender, instance, **kwargs):
 
 @receiver(video_convert_done)
 def on_video_convert_done(video, **kwargs):
-	logger.info('VIDEO CONVERT DONE: {} {}'.format(video.file.name, video.watch_id))
 	video.processed = True
 	video.save()

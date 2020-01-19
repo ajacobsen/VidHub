@@ -25,8 +25,8 @@ from django_rq import enqueue
 
 from users.models import Channel
 
-from .models import Video, Category, Playlist, PlaylistEntry, Subscription, Likes, Dislikes, Comment
-from .forms import VideoForm, EditVideoForm
+from .models import Video, VideoFile, Category, Playlist, PlaylistEntry, Subscription, Likes, Dislikes, Comment
+from .forms import VideoForm, VideoFileForm, EditVideoForm
 
 logger =logging.getLogger('django')
 
@@ -38,10 +38,10 @@ class IndexView(View):
 		category_name = request.GET.get('c', None)
 		if category_name:
 			category = Category.objects.get(name__exact=category_name)
-			videos = Video.objects.filter(category__exact=category, status__exact='public', processed__exact=True)
+			videos = Video.objects.filter(category__exact=category, status__exact='public', file__processed=True)
 			context['category'] = category
 		else:
-			videos = Video.objects.filter(status__exact='public', processed__exact=True)
+			videos = Video.objects.filter(status__exact='public', file__processed=True)
 		if search:
 			videos = videos.filter(title__icontains=search)
 		context['videos'] = videos
@@ -69,8 +69,8 @@ class VideoView(View):
 			is_video_disliked = Dislikes.objects.filter(channel__exact=channel, video__exact=video).exists()
 			loggedin_channel = Channel.objects.get(user__exact=request.user)
 			subscribed = Subscription.objects.filter(from_channel__exact=loggedin_channel, to_channel__exact=channel).exists()
-		formats = video.format_set.complete().all()
-		recommended_videos = Video.objects.filter(status__exact='public', processed__exact=True)
+		formats = video.file.format_set.complete().all()
+		recommended_videos = Video.objects.filter(status__exact='public', file__processed=True)
 		comments = Comment.objects.filter(active=True, parent__isnull=True, video__exact=video)
 		return render(request, 'streamer/video.html', {'video' : video, 'formats' : formats, 'is_video_liked' : is_video_liked, 'is_video_disliked': is_video_disliked, 'like_count' : like_count, 'dislike_count' : dislike_count, 'subscribed' : subscribed, 'recommended_videos' : recommended_videos, 'comments' : comments})
 
@@ -78,44 +78,43 @@ class UploadVideoView(LoginRequiredMixin, View):
 	def post(self, request):
 		if request.is_ajax():
 			if request.POST.get('get_thumbnail'):
-				video = Video.objects.get(watch_id__exact=request.POST.get('watch_id'))
+				video_data = Video.objects.get(watch_id__exact=request.POST.get('watch_id'))
+				video_file = video_data.file
 				response = {'thumbnails' : []}
 				for i in list(range(3)):
-					timestamp = min(((video.duration / 3) / 0.5) + i, video.duration-0.5)
-					tmp_thumbnail = FFmpegBackend().get_thumbnail(video_path=video.file.path, at_time=timestamp)
-					filename = 'thumbnail_{}_{}.jpg'.format(video.watch_id, i)
+					timestamp = min(((video_file.file.duration / 3) / 0.5) + i, video_file.duration-0.5)
+					tmp_thumbnail = FFmpegBackend().get_thumbnail(video_path=video_file.file.path, at_time=timestamp)
+					filename = 'thumbnail_{}_{}.jpg'.format(video_data.watch_id, i)
 					server_path = os.path.join(settings.MEDIA_ROOT, filename)
 					shutil.move(tmp_thumbnail, server_path)
 					url = settings.MEDIA_URL + filename
 					response['thumbnails'].append(url)
 				return JsonResponse(response)
 			else:
-				form = VideoForm(request.POST, request.FILES)
+				form = VideoFileForm(request.POST, request.FILES)
 				if not request.FILES.get('file').content_type.startswith('video/'):
 					return JsonResponse({'is_valid' : False})
 				if form.is_valid():
 					try:
-						video = form.save()
-					except FFmpegError as e:
-						os.remove(os.path.join(settings.MEDIA_ROOT, form.files['file'].name))
+						video_file = form.save()
+					except FFmpegError:
+						os.remove(os.path.join(MEDIA_ROOT, form.files['file'].name))
 						return JsonResponse({'is_valid' : False})
-					video.channel = Channel.objects.get(user__exact=request.user.id)
-					video.status = 'drafting'
-					video.save()
 
-					logger.info('VALIDATING MIME-TYPE: {}'.format(video.file.path))
-					f = os.path.join(settings.MEDIA_ROOT, video.file.name)
+					f = os.path.join(settings.MEDIA_ROOT, video_file.file.name)
 					if not magic.from_file(f, mime=True).startswith('video/'):
-						logger.info('FILE INVALID: {}'.format(video.file.path))
 						video.delete()
-					else:
-						logger.info('FILE VALID: {}'.format(video.file.path))
-
-					try:
-						Video.objects.get(pk=video.pk)
-						data = {'is_valid' : True, 'name' : video.file.name, 'url' : video.file.url, 'watch_id' : video.watch_id}
-					except Exception as e:
-						data = {'is_valid' : False}
+						return JsonResponse({'is_valid' : False})
+					video_data = Video.objects.create(file=video_file)
+					video_data.channel = Channel.objects.get(channel_id__exact=request.session['channel_id'])
+					video_data.status = 'drafting'
+					video_data.save()
+					logger.info('START CONVERTING' + video_file.file.path)
+					enqueue(tasks.convert_all_videos,
+							video_file._meta.app_label,
+							video_file._meta.model_name,
+							video_file.pk)
+					data = {'is_valid' : True, 'name' : video_file.file.name, 'url' : video_file.file.url, 'watch_id' : video_data.watch_id}
 				else:
 					data = {'is_valid' : False}
 				return JsonResponse(data)
@@ -139,15 +138,10 @@ class UploadVideoView(LoginRequiredMixin, View):
 			video.status = 'public'
 			video.category = Category.objects.get(pk=request.POST.get('category'))
 			video.save()
-			logger.info('START CONVERTING' + video.file.path)
-			enqueue(tasks.convert_all_videos,
-					video._meta.app_label,
-					video._meta.model_name,
-					video.pk)
 			return redirect("/")
 
 	def get(self, request):
-		form = VideoForm()
+		form = VideoFileForm()
 		categories = Category.objects.all()
 		return render(request, 'streamer/upload.html', {'form' : form, 'initial_upload' : True, 'categories' : categories})
 
@@ -158,6 +152,7 @@ class EditVideoView(LoginRequiredMixin, View):
 		return render(request, 'streamer/edit_video.html', {'form' : form, 'video' : video})
 
 	def post(self, request, watch_id):
+		video = get_object_or_404(Video, watch_id__exact=watch_id)
 		form = EditVideoForm(request.POST, request.FILES or None, instance=video)
 		if form.is_valid():
 			form.save()
@@ -170,7 +165,7 @@ class DeleteVideoView(LoginRequiredMixin, View):
 		video = Video.objects.get(watch_id__exact=request.POST.get('watch_id'))
 		channel = Channel.objects.get(user__exact=request.user)
 		if video.channel == channel:
-			video.delete()
+			video.file.delete()
 			return JsonResponse({"success" : True})
 		else:
 			raise SuspiciousOperation
@@ -180,7 +175,7 @@ class DeleteVideoView(LoginRequiredMixin, View):
 class ChannelView(View):
 	def get(self, request, channel_id):
 		channel = Channel.objects.get(channel_id__exact=channel_id)
-		videos = Video.objects.filter(channel__exact=channel, status__exact='public', processed__exact=True)
+		videos = Video.objects.filter(channel__exact=channel, status__exact='public', file__processed=True)
 
 		if request.user.is_authenticated:
 			loggedin_channel = Channel.objects.get(user__exact=request.user)

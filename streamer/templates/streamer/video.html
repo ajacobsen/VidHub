@@ -218,7 +218,7 @@
 
 {% include 'streamer/navbar.html' %}
 
-{% if video.processed %}
+{% if video.file.processed %}
 	<div style="grid-column-start: 1; grid-column-end: 4">
 		<div class="video-title">{{ video.title }}</div>
 		<div id="channel-buttons" class="btn-group">
@@ -232,16 +232,12 @@
 	</div>
 {% endif %}
 <div style="grid-column-start: 1; grid-column-end: 3">
-	{% if video.processed %}
+	{% if video.file.processed %}
 		<div class="video-container">
 			<video id="video" class="video-js vjs-default-skin" controls preload="none" width="670" height="377" poster="{{ video.thumbnail.url }}" data-setup="{}">
-			{% if formats %}
-				{% for format in formats %}
-					<source src="{{ MEDIA_URL }}{{ format.file }}" type="video/mp4" label="{{ format.label }}">
-				{% endfor %}
-			{% else %}
-				<source src="{{ video.file }}" type="video/mp4" label="test">
-			{% endif %}
+			{% for format in formats %}
+				<source src="{{ MEDIA_URL }}{{ format.file }}" type="video/mp4" label="{{ format.label }}">
+			{% endfor %}
 			<p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
 			</video>
 

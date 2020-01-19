@@ -3,7 +3,7 @@
 import os
 
 from django.core.management.base import BaseCommand, CommandError
-from streamer.models import Video
+from streamer.models import Video, VideoFile
 
 class Command(BaseCommand):
 	help = 'Find and delete stray files in media/'
@@ -15,10 +15,10 @@ class Command(BaseCommand):
 		dbfiles = set()
 		for video in videos:
 			if video.file:
-				dbfiles.add(video.file.path)
+				dbfiles.add(video.file.file.path)
 			if video.thumbnail:
 				dbfiles.add(video.thumbnail.path)
-			for vidformat in video.format_set.all():
+			for vidformat in video.file.format_set.all():
 				if vidformat.file:
 					dbfiles.add(vidformat.file.path)
 
@@ -32,5 +32,5 @@ class Command(BaseCommand):
 			self.stdout.write('No stray files found!')
 		for line in strayfiles:
 			self.stdout.write('DELETING: {}'.format(line))
-			os.remove(line)
+			# os.remove(line)
 

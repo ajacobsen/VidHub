@@ -15,6 +15,17 @@ class Category(models.Model):
 	def __str__(self):
 		return self.title
 
+class VideoFile(models.Model):
+	width = models.PositiveIntegerField(editable=False, null=True)
+	height = models.PositiveIntegerField(editable=False, null=True)
+	duration = models.FloatField(editable=False, null=True)
+	file = VideoField(width_field='width', height_field='height', duration_field='duration')
+	format_set = GenericRelation(Format)
+	processed = models.BooleanField(default=False)
+
+	def __str__(self):
+		return self.file.name
+
 class Video(models.Model):
 	VIDEO_STATUS_CHOICES = (
 		('public', 'public'),
@@ -36,19 +47,14 @@ class Video(models.Model):
 	view_count = models.BigIntegerField(default=0)
 	video_type = models.CharField(max_length=10, choices=VIDEO_TYPE_CHOICES, default='local')
 	uploaded = models.DateTimeField(default=timezone.now)
-	width = models.PositiveIntegerField(editable=False, null=True)
-	height = models.PositiveIntegerField(editable=False, null=True)
-	duration = models.FloatField(editable=False, null=True)
 	thumbnail = models.ImageField(upload_to='thumbnails/', blank=True)
-	file = VideoField(width_field='width', height_field='height', duration_field='duration')
-	format_set = GenericRelation(Format)
-	processed = models.BooleanField(default=False)
-
+	
+	file = models.OneToOneField(VideoFile, on_delete=models.CASCADE)
 	channel = models.ForeignKey(Channel, on_delete=models.CASCADE, blank=True, null=True)
 	category = models.ForeignKey(Category, on_delete=models.CASCADE, blank=True, null=True)
 
 	def __str__(self):
-		return str(self.file)
+		return str(self.title)
 
 class PlaylistEntry(models.Model):
 	video = models.ForeignKey(Video, on_delete=models.CASCADE)
