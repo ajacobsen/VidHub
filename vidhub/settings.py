@@ -12,7 +12,10 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 
-from .config import Config
+if os.environ.get('DJANGO_ENV'):
+	from .config_dev import Config
+else:
+	from .config_prod import Config
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -47,7 +50,6 @@ INSTALLED_APPS = [
 
 	'django_rq',
 	'video_encoding',
-	'maintenance_mode',
 ]
 
 
@@ -59,10 +61,9 @@ MIDDLEWARE = [
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
 	'django.contrib.messages.middleware.MessageMiddleware',
 	'django.middleware.clickjacking.XFrameOptionsMiddleware',
-	'maintenance_mode.middleware.MaintenanceModeMiddleware',
 ]
 
-ROOT_URLCONF = 'vidhub.urls'
+ROOT_URLCONF = Config.ROOT_URLCONF
 
 TEMPLATES = [
 	{
@@ -76,7 +77,6 @@ TEMPLATES = [
 				'django.contrib.auth.context_processors.auth',
 				'django.contrib.messages.context_processors.messages',
 				'django.template.context_processors.media',
-				'maintenance_mode.context_processors.maintenance_mode',
 			],
 		},
 	},
@@ -135,15 +135,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-
 STATICFILES_DIRS = [
 	os.path.join(BASE_DIR, "static"),
-	'/var/www/static/',
 ]
+STATIC_ROOT = Config.STATIC_ROOT
 
-
-MEDIA_ROOT= os.path.join(BASE_DIR, 'media/')
-MEDIA_URL= "/media/"
+MEDIA_ROOT= Config.MEDIA_ROOT
+MEDIA_URL= '/media/'
 
 
 RQ_QUEUES = {
@@ -153,28 +151,7 @@ RQ_QUEUES = {
 		'DB': 0,
 		'DEFAULT_TIMEOUT': 3600,
 	},
-	# 'with-sentinel': {
-	#     'SENTINELS': [('localhost', 26736), ('localhost', 26737)],
-	#     'MASTER_NAME': 'redismaster',
-	#     'DB': 0,
-	#     'PASSWORD': 'secret',
-	#     'SOCKET_TIMEOUT': None,
-	#     'CONNECTION_KWARGS': {
-	#         'socket_connect_timeout': 0.3
-	#     },
-	# },
-	# 'high': {
-	#     'URL': os.getenv('REDISTOGO_URL', 'redis://localhost:6379/0'), # If you're on Heroku
-	#     'DEFAULT_TIMEOUT': 500,
-	# },
-	# 'low': {
-	#     'HOST': 'localhost',
-	#     'PORT': 6379,
-	#     'DB': 0,
-	# }
 }
-
-# RQ_EXCEPTION_HANDLERS = ['path.to.my.handler'] # If you need custom exception handlers
 
 VIDEO_ENCODING_FORMATS = {
 	'FFmpeg': [
@@ -205,26 +182,7 @@ LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/login/'
 LOGOUT_REDIRECT_URL = '/'
 
-MAINTENANCE_MODE = Config.MAINTENANCE_MODE
-MAINTENANCE_MODE_TEMPLATE = Config.MAINTENANCE_MODE_TEMPLATE
-MAINTENANCE_MODE_IGNORE_ADMIN_SITE = Config.MAINTENANCE_MODE_IGNORE_ADMIN_SITE
-MAINTENANCE_MODE_IGNORE_AUTHENTICATED_USER = Config.MAINTENANCE_MODE_IGNORE_AUTHENTICATED_USER
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
-        },
-    },
-}
+LOGGING = Config.LOGGING
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.AllowAllUsersModelBackend',
