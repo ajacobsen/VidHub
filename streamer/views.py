@@ -92,8 +92,6 @@ class UploadVideoView(LoginRequiredMixin, View):
 				return JsonResponse(response)
 			else:
 				form = VideoFileForm(request.POST, request.FILES)
-				if not request.FILES.get('file').content_type.startswith('video/'):
-					return JsonResponse({'is_valid' : False})
 				if form.is_valid():
 					try:
 						video_file = form.save()
@@ -116,7 +114,8 @@ class UploadVideoView(LoginRequiredMixin, View):
 							video_file.pk)
 					data = {'is_valid' : True, 'name' : video_file.file.name, 'url' : video_file.file.url, 'watch_id' : video_data.watch_id}
 				else:
-					data = {'is_valid' : False}
+					errors = dict(form.errors)
+					data = {'is_valid' : False, 'errors' : errors}
 				return JsonResponse(data)
 		else:
 			video = Video.objects.get(watch_id__exact=request.POST.get('watch_id', ''))

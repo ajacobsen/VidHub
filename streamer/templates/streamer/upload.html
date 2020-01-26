@@ -215,9 +215,6 @@
 </div>
 
 <div id="upload-failed" class="d-none">
-	<div>
-		The file you are uploading may not be a valid video file.
-	</div>
 </div>
 
 {% endblock main_content %}
@@ -277,6 +274,7 @@
 	    		});
 	    	} else {
 	    		$('#edit_upload').addClass('d-none');
+	    		$('#upload-failed').html(data.result.errors['file']);
 	    		$('#upload-failed').removeClass('d-none');
 	    	}
 	    }

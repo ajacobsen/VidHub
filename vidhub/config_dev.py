@@ -16,7 +16,7 @@ class Config:
 		}
 	}
 
-	DEBUG = False
+	DEBUG = True
 
 	DOMAIN = 'example.com'
 
@@ -44,6 +44,7 @@ class Config:
 	}
 
 	BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-	STATIC_ROOT = os.path.join(BASE_DIR, '/static/')
-	MEDIA_ROOT= os.path.join(BASE_DIR, '/media/')
-	
+	STATIC_ROOT = os.path.join(BASE_DIR, 'static-root')
+	MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+	MAX_UPLOAD_SIZE = 214958080
