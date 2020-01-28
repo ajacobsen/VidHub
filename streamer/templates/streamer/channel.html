@@ -470,13 +470,13 @@
 			</div>
 			<div class="channel-info-created channel-info-section">
 				<div class="channel-info-item">
-					<div>Created by</div><div>{{ channel.owner.username }}</div>
+					<div>Created by</div><div>{{ channel.name }}</div>
 				</div>
 				<div class="channel-info-item">
-					<div>Last Activity</div><div>{{ channel.owner.last_login|date:"d M Y"|default:"--" }}</div>
+					<div>Last Activity</div><div>{{ channel.user.last_login|date:"d M Y"|default:"--" }}</div>
 				</div>
 				<div class="channel-info-item">
-					<div>Date Joined</div><div>{{ channel.owner.date_joined|date:"d M Y" }}</div>
+					<div>Date Joined</div><div>{{ channel.user.date_joined|date:"d M Y" }}</div>
 				</div>
 			</div>
 		</div>
