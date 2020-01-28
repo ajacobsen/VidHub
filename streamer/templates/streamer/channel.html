@@ -488,7 +488,6 @@
 {% block javascript %}
 	<script type="text/javascript">
 		$('#subscribe').click(function () {
-			console.log("SUBSCRIBE CLICKED!");
 			let csrftoken = $("[name=csrfmiddlewaretoken]").val();
 			let action = "subscribe"
 			if ($(this).hasClass('js-action-unsubscribe')) {
@@ -500,6 +499,7 @@
 				url: '/subscribe/',
 				beforeSend: function (request) {
 					request.setRequestHeader("X-CSRFToken", csrftoken);
+					$(this).attr('disabled', true);
 				},
 				data: {
 					'csfrmiddlewaretoken' : csrftoken,
@@ -508,7 +508,6 @@
 				},
 				dataType: 'json',
 				success: function (data) {
-					console.log(data)
 					$(this).toggleClass('js-action-subscribe');
 					$(this).toggleClass('js-action-unsubscribe');
 					if ($(this).html().trim() === 'Subscribe') {
@@ -517,6 +516,7 @@
 						$(this).html('Subscribe');
 					}
 					$('#subscriber_count').html(data['subscriber_count']);
+					$(this).attr('disabled', false)
 				}
 			});
 		});

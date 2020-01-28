@@ -203,7 +203,12 @@ class SubscribeView(LoginRequiredMixin, View):
 		from_channel = Channel.objects.get(user__exact=request.user)
 		to_channel = Channel.objects.get(pk=request.POST.get('channel_id'))
 
+		if from_channel == to_channel:
+			return JsonResponse({'success' : False})
+
 		if request.POST.get('action') == 'subscribe':
+			if Subscription.objects.filter(from_channel__exact=from_channel, to_channel__exact=to_channel).exists():
+				return JsonResponse({'success' : False})
 			Subscription.objects.create(from_channel=from_channel, to_channel=to_channel)
 		else:
 			subscription = Subscription.objects.get(from_channel__exact=from_channel, to_channel__exact=to_channel)
