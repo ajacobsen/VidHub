@@ -223,10 +223,20 @@
 		<div class="video-title">{{ video.title }}</div>
 		<div id="channel-buttons" class="btn-group">
 			<button class="btn" href="/channel/{{ video.channel.channel_id }}" onclick=";window.location.href=this.getAttribute('href');return false;">{{ video.channel.name }}</button>
-			{% if subscribed %}
-				<button id="subscribe" class="btn js-action-unsubscribe">Unsubscribe</button>
+			{% if request.user.is_authenticated and request.session.channel_id != video.channel.channel_id %}
+				{% if subscribed %}
+					<button id="subscribe" class="js-action-unsubscribe">
+						Unsubscribe
+					</button>
+				{% else %}
+					<button id="subscribe" class="js-action-subscribe">
+						Subscribe
+					</button>
+				{% endif %}
 			{% else %}
-				<button id="subscribe" class="btn js-action-subscribe">Subscribe</button>
+				<button id="subscribe" class="js-action-subscribe" disabled="true">
+					Subscribe
+				</button>
 			{% endif %}
 		</div>
 	</div>

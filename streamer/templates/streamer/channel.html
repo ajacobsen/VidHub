@@ -395,6 +395,7 @@
 		<div class="channel-header-upper-left">
 			<img style="width: 55px;" src="{% static 'img/avatar.png' %}">
 			<h1>{{ channel.name }}</h1>
+			{% if request.user.is_authenticated and request.session.channel_id != channel.channel_id %}
 				{% if subscribed %}
 					<button id="subscribe" class="js-action-unsubscribe">
 						Unsubscribe
@@ -404,6 +405,11 @@
 						Subscribe
 					</button>
 				{% endif %}
+			{% else %}
+				<button id="subscribe" class="js-action-subscribe" disabled="true">
+					Subscribe
+				</button>
+			{% endif %}
 		</div>
 		<div class="channel-header-upper-right">
 			<div class="stat-entry"><div id="subscriber_count">{{ subscriber_count }}</div><div>subscribers</div></div>
