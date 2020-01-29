@@ -223,14 +223,15 @@ class LikeView(LoginRequiredMixin, View):
 
 	def post(self, request):
 		video = Video.objects.get(pk=request.POST.get('video_id'))
+		channel = Channel.objects.get(channel_id__exact=request.session.get('channel_id'))
 		was_disliked = False
 		if request.POST.get('action') == 'like':
-			if not Likes.objects.filter(user__exact=request.user, video__exact=video).exists():
-				was_disliked = Dislikes.objects.filter(user__exact=request.user, video__exact=video).delete()[0] > 0
-				Likes.objects.create(video=video, user=request.user)
+			if not Likes.objects.filter(channel__exact=channel, video__exact=video).exists():
+				was_disliked = Dislikes.objects.filter(channel__exact=channel, video__exact=video).delete()[0] > 0
+				Likes.objects.create(video=video, channel=channel)
 		
 		elif request.POST.get('action') == 'unlike':
-			Likes.objects.filter(user__exact=request.user, video__exact=video).delete()
+			Likes.objects.filter(channel__exact=channel, video__exact=video).delete()
 
 		like_count = Likes.objects.filter(video__exact=video).count()
 		dislike_count = Dislikes.objects.filter(video__exact=video).count()
@@ -242,14 +243,14 @@ class DislikeView(LoginRequiredMixin, View):
 
 	def post(self, request):
 		video = Video.objects.get(pk=request.POST.get('video_id'))
-
+		channel = Channel.objects.get(channel_id__exact=request.session.get('channel_id'))
 		was_liked = False
 		if request.POST.get('action') == 'dislike':
-			if not Dislikes.objects.filter(user__exact=request.user, video__exact=video).exists():
-				was_liked = Likes.objects.filter(user__exact=request.user, video__exact=video).delete()[0] > 0
-				Dislikes.objects.create(video=video, user=request.user)
+			if not Dislikes.objects.filter(channel__exact=channel, video__exact=video).exists():
+				was_liked = Likes.objects.filter(channel__exact=channel, video__exact=video).delete()[0] > 0
+				Dislikes.objects.create(video=video, channel=channel)
 		elif request.POST.get('action') == 'undislike':
-			Dislikes.objects.filter(user__exact=request.user, video__exact=video).delete()
+			Dislikes.objects.filter(channel__exact=channel, video__exact=video).delete()
 
 		like_count = Likes.objects.filter(video__exact=video).count()
 		dislike_count = Dislikes.objects.filter(video__exact=video).count()

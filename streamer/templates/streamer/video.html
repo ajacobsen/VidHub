@@ -443,7 +443,6 @@
 		});
 
 		$('#like').click(function () {
-			console.log("LIKE CLICKED!");
 			let csrftoken = $("[name=csrfmiddlewaretoken]").val();
 			let action = "like"
 			if ($(this).hasClass('js-action-unlike')) {
@@ -455,6 +454,7 @@
 				url: '/like/',
 				beforeSend: function (request) {
 					request.setRequestHeader("X-CSRFToken", csrftoken);
+					$(this).attr('disabled', true);
 				},
 				data: {
 					'csfrmiddlewaretoken' : csrftoken,
@@ -463,7 +463,6 @@
 				},
 				dataType: 'json',
 				success: function (data) {
-					console.log(data)
 					$(this).toggleClass('js-action-like');
 					$(this).toggleClass('js-action-unlike');
 					$('#like_count').html(data['like_count']);
@@ -472,12 +471,12 @@
 						$('#dislike').toggleClass('js-action-dislike');
 						$('#dislike').toggleClass('js-action-undislike');
 					}
+					$(this).attr('disabled', false);
 				}
 			});
 		});
 
 		$('#dislike').click(function () {
-			console.log("DISLIKE CLICKED!");
 			let csrftoken = $("[name=csrfmiddlewaretoken]").val();
 			let action = "dislike"
 			if ($(this).hasClass('js-action-undislike')) {
@@ -489,6 +488,7 @@
 				url: '/dislike/',
 				beforeSend: function (request) {
 					request.setRequestHeader("X-CSRFToken", csrftoken);
+					$(this).attr('disabled', true);
 				},
 				data: {
 					'csfrmiddlewaretoken' : csrftoken,
@@ -497,7 +497,6 @@
 				},
 				dataType: 'json',
 				success: function (data) {
-					console.log(data)
 					$(this).toggleClass('js-action-dislike');
 					$(this).toggleClass('js-action-undislike');
 					$('#like_count').html(data['like_count']);
@@ -506,6 +505,7 @@
 						$('#like').toggleClass('js-action-like');
 						$('#like').toggleClass('js-action-unlike');
 					}
+					$(this).attr('disabled', false);
 				}
 			});
 		});
