@@ -5,7 +5,7 @@ django-appconf==1.0.3
 django-rq==2.2.0
 -e git+https://github.com/ajacobsen/django-video-encoding.git@f88b4b296024a2f1dfaadfcfcc3744f36ef5812d#egg=django_video_encoding
 mysqlclient==1.4.6
-Pillow==5.4.1
+Pillow==6.2.0
 python-magic==0.4.15
 pytz==2019.3
 redis==3.3.11
