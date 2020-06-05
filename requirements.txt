@@ -1,6 +1,6 @@
 asgiref==3.2.3
 Click==7.0
-Django==3.0.3
+Django==3.0.7
 django-appconf==1.0.3
 django-rq==2.2.0
 -e git+https://github.com/ajacobsen/django-video-encoding.git@f88b4b296024a2f1dfaadfcfcc3744f36ef5812d#egg=django_video_encoding
